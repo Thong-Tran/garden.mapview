@@ -38,4 +38,4 @@ def get_zoom_for_radius(radius):
     while metersPerPixel * widthInPixels > radius:
         metersPerPixel /= 2
         zoomLevel += 1
-    return zoomLevel - 1
+    return zoomLevel - 2

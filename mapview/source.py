@@ -26,15 +26,16 @@ class MapSource(object):
         "osm-de": (0, 0, 18, "http://{s}.tile.openstreetmap.de/tiles/osmde/{z}/{x}/{y}.png", "Tiles @ OSM DE"),
         "osm-fr": (0, 0, 20, "http://{s}.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png", "Tiles @ OSM France"),
         "cyclemap": (0, 0, 17, "http://{s}.tile.opencyclemap.org/cycle/{z}/{x}/{y}.png", "Tiles @ Andy Allan"),
+        'here': (0, 0, 19, 'http://{s}.base.maps.api.here.com/maptile/2.1/maptile/newest/normal.day/{z}/{x}/{y}/512/jpg?app_id=Xf6kJqi4LV3lJqyNy6cv&app_code=ku2ywCt2BHba1ycKJHggzA&ppi=320&lg=vie', "Maps & Data © HERE", {"subdomains": "1234"}),
         "thunderforest-cycle": (0, 0, 19, "http://{s}.tile.thunderforest.com/cycle/{z}/{x}/{y}.png", attribution_thunderforest),
         "thunderforest-transport": (0, 0, 19, "http://{s}.tile.thunderforest.com/transport/{z}/{x}/{y}.png", attribution_thunderforest),
         "thunderforest-landscape": (0, 0, 19, "http://{s}.tile.thunderforest.com/landscape/{z}/{x}/{y}.png", attribution_thunderforest),
         "thunderforest-outdoors": (0, 0, 19, "http://{s}.tile.thunderforest.com/outdoors/{z}/{x}/{y}.png", attribution_thunderforest),
-        
+
         # no longer available
         #"mapquest-osm": (0, 0, 19, "http://otile{s}.mqcdn.com/tiles/1.0.0/map/{z}/{x}/{y}.jpeg", "Tiles Courtesy of Mapquest", {"subdomains": "1234", "image_ext": "jpeg"}),
         #"mapquest-aerial": (0, 0, 19, "http://oatile{s}.mqcdn.com/tiles/1.0.0/sat/{z}/{x}/{y}.jpeg", "Tiles Courtesy of Mapquest", {"subdomains": "1234", "image_ext": "jpeg"}),
-        
+
         # more to add with
         # https://github.com/leaflet-extras/leaflet-providers/blob/master/leaflet-providers.js
         # not working ?

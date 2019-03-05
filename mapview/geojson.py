@@ -206,6 +206,7 @@ class GeoJsonMapLayer(MapLayer):
             self.g_translate = Translate()
         with self.canvas_polygon:
             self.g_canvas_polygon = Canvas()
+            self.canvas_line = Canvas()
         with self.canvas_polygon.after:
             PopMatrix()
 
@@ -269,6 +270,9 @@ class GeoJsonMapLayer(MapLayer):
                 for polygon in geometry["coordinates"]:
                     for coordinate in polygon[0]:
                         _submit_coordinate(coordinate)
+            elif tp == 'LineString':
+                for coordinate in geometry["coordinates"]:
+                    _submit_coordinate(coordinate)
         self.traverse_feature(_get_bounds)
         return bounds
 
@@ -351,7 +355,7 @@ class GeoJsonMapLayer(MapLayer):
 
         elif tp == "LineString":
             stroke = get_color_from_hex(properties.get("stroke", "#ffffff"))
-            stroke_width = dp(properties.get("stroke-width"))
+            stroke_width = dp(properties.get("stroke-width", 5))
             xy = list(self._lonlat_to_xy(geometry["coordinates"]))
             xy = flatten(xy)
             graphics.append(Color(*stroke))
