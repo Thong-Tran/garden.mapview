@@ -631,6 +631,7 @@ class MapView(Widget):
         "scrolldown", "scrollup"):
             d = 1 if touch.button == "scrollup" else -1
             self.animated_diff_scale_at(d, *touch.pos)
+            self._touch_zoom = (self.zoom, self._scale)
             return True
         elif touch.is_double_tap and self.double_tap_zoom:
             self.animated_diff_scale_at(1, *touch.pos)
@@ -638,7 +639,7 @@ class MapView(Widget):
         touch.grab(self)
         self._touch_count += 1
         if self._touch_count == 1:
-            self._touch_zoom = (self.zoom, self._scale)
+            self._touch_zoom = (self.zoom, round(self._scale))
         return super(MapView, self).on_touch_down(touch)
 
     def on_touch_up(self, touch):
@@ -649,7 +650,7 @@ class MapView(Widget):
                 # animate to the closest zoom
                 zoom, scale = self._touch_zoom
                 cur_zoom = self.zoom
-                cur_scale = self._scale
+                cur_scale = round(self._scale)
                 if cur_zoom < zoom or cur_scale < scale:
                     self.animated_diff_scale_at(1. - cur_scale, *touch.pos)
                 elif cur_zoom > zoom or cur_scale > scale:
