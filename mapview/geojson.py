@@ -27,7 +27,6 @@ from kivy.graphics import Mesh, Line, Color
 from kivy.graphics.tesselator import Tesselator, WINDING_ODD, TYPE_POLYGONS
 from kivy.utils import get_color_from_hex
 from kivy.metrics import dp
-from kivy.utils import get_color_from_hex
 from mapview import CACHE_DIR
 from mapview.view import MapLayer
 from mapview.downloader import Downloader
@@ -182,6 +181,7 @@ COLORS = {
     'yellowgreen': '#9acd32'
 }
 
+STROKE_WIDTH = [1.5, 2, 3, 6, 9, 15, 30, 66]
 
 def flatten(l):
     return [item for sublist in l for item in sublist]
@@ -229,6 +229,12 @@ class GeoJsonMapLayer(MapLayer):
         if self.geojson:
             update = not self.first_time
             self.on_geojson(self, self.geojson, update=update)
+            for i in self.canvas_line.children:
+                if isinstance(i, Line):
+                    max_zoom = self.parent.map_source.max_zoom
+                    nw = max_zoom - pzoom
+                    if len(STROKE_WIDTH) > nw:
+                        i.width = dp(STROKE_WIDTH[nw])
             self.first_time = False
 
     def traverse_feature(self, func, part=None):
@@ -290,9 +296,9 @@ class GeoJsonMapLayer(MapLayer):
             # print "Reload geojson (polygon)"
             self.g_canvas_polygon.clear()
             self._geojson_part(geojson, geotype="Polygon")
-        # print "Reload geojson (LineString)"
-        self.canvas_line.clear()
-        self._geojson_part(geojson, geotype="LineString")
+            # print "Reload geojson (LineString)"
+            self.canvas_line.clear()
+            self._geojson_part(geojson, geotype="LineString")
 
     def on_source(self, instance, value):
         if value.startswith("http://") or value.startswith("https://"):
@@ -354,12 +360,13 @@ class GeoJsonMapLayer(MapLayer):
                         mode="triangle_fan"))
 
         elif tp == "LineString":
-            stroke = get_color_from_hex(properties.get("stroke", "#ffffff"))
-            stroke_width = dp(properties.get("stroke-width", 5))
+            stroke = get_color_from_hex(properties.get("stroke", "#000000aa"))
+            stroke_width = dp(properties.get("stroke-width", 2))
             xy = list(self._lonlat_to_xy(geometry["coordinates"]))
             xy = flatten(xy)
             graphics.append(Color(*stroke))
-            graphics.append(Line(points=xy, width=stroke_width))
+            graphics.append(Line(points=xy, width=stroke_width,
+                                cap='round', joint='round'))
 
         return graphics
 

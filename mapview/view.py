@@ -629,9 +629,10 @@ class MapView(Widget):
             self._pause = True
         if "button" in touch.profile and touch.button in (
         "scrolldown", "scrollup"):
-            d = 1 if touch.button == "scrollup" else -1
+            d = 1 if touch.button == "scrolldown" else -1
+            # print(self.zoom, self._scale)
             self.animated_diff_scale_at(d, *touch.pos)
-            self._touch_zoom = (self.zoom, self._scale)
+            self._touch_zoom = (self.zoom, round(self._scale))
             return True
         elif touch.is_double_tap and self.double_tap_zoom:
             self.animated_diff_scale_at(1, *touch.pos)
@@ -651,6 +652,7 @@ class MapView(Widget):
                 zoom, scale = self._touch_zoom
                 cur_zoom = self.zoom
                 cur_scale = round(self._scale)
+                # print('O:', zoom, scale, '- N:', cur_zoom, cur_scale, self._scale)
                 if cur_zoom < zoom or cur_scale < scale:
                     self.animated_diff_scale_at(1. - cur_scale, *touch.pos)
                 elif cur_zoom > zoom or cur_scale > scale:

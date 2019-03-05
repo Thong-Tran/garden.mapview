@@ -1,20 +1,18 @@
 from kivy.base import runTouchApp
 import sys
 
-if __name__ == '__main__' and __package__ is None:
-    from os import sys, path
-    sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
+from os import sys, path
+sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
 
-from mapview import MapView, MapMarker
+from kivy.uix.bubble import Bubble
+from kivy.uix.label import Label
+from mapview import MapView, MapMarker, MapSource, MapMarkerPopup
 from mapview.geojson import GeoJsonMapLayer
 from mapview.utils import haversine, get_zoom_for_radius
 
-if len(sys.argv) > 1:
-    source = sys.argv[1]
-else:
-    source = "https://storage.googleapis.com/maps-devrel/google.json"
+source = "test.json"
 
-options = {}
+options = {'map_source': MapSource.from_provider('here')}
 layer = GeoJsonMapLayer(source=source)
 
 if layer.geojson:
@@ -25,7 +23,7 @@ if layer.geojson:
     min_lon, max_lon, min_lat, max_lat = layer.bounds
     radius = haversine(min_lon, min_lat, max_lon, max_lat)
     zoom = get_zoom_for_radius(radius)
-    options["zoom"] = zoom
+    options["zoom"] = options['map_source'].max_zoom-2
 
 view = MapView(**options)
 view.add_layer(layer)
@@ -40,7 +38,13 @@ if layer.geojson:
         if geometry["type"] != "Point":
             return
         lon, lat = geometry["coordinates"]
-        marker = MapMarker(lon=lon, lat=lat)
+        marker = MapMarkerPopup(lon=lon, lat=lat)
+        b=Bubble()
+        l=Label()
+        l.text=str(marker.pos)
+        b.add_widget(l)
+        marker.add_widget(b)
+        marker.bind(pos=lambda *x: setattr(l, 'text', str(marker.pos)))
         view.add_marker(marker)
         count += 1
 
