@@ -9,11 +9,13 @@ from kivy.uix.label import Label
 from mapview import MapView, MapMarker, MapSource, MapMarkerPopup
 from mapview.geojson import GeoJsonMapLayer
 from mapview.utils import haversine, get_zoom_for_radius
+from  mapview.create_geojson import create_route_here_maps
 
-source = "test.json"
+# source = "test3.json"
+geojson = create_route_here_maps('10.784577,106.678545','10.790697,106.688480')
 
 options = {'map_source': MapSource.from_provider('here')}
-layer = GeoJsonMapLayer(source=source)
+layer = GeoJsonMapLayer(geojson=geojson)
 
 if layer.geojson:
     # try to auto center the map on the source
