@@ -10,12 +10,19 @@ from mapview import MapView, MapMarker, MapSource, MapMarkerPopup
 from mapview.geojson import GeoJsonMapLayer
 from mapview.utils import haversine, get_zoom_for_radius
 from  mapview.create_geojson import create_route_here_maps
+from  mapview.create_geojson import create_route_google_maps
 
-# source = "test3.json"
+# local test
+# source = "/Users/vulequoc/Downloads/Test.json"
+# options = {'map_source': MapSource.from_provider('here')}
+# layer = GeoJsonMapLayer(source = source)
+
+# online test
 geojson = create_route_here_maps('10.784577,106.678545','10.790697,106.688480')
-
+# geojson = create_route_google_maps('Hà Nội','TP. Hồ Chí Minh', token='AIzaSyDimTjQBe9a6xTlSBTW68KRup5IwQ4p-V4')
 options = {'map_source': MapSource.from_provider('here')}
 layer = GeoJsonMapLayer(geojson=geojson)
+
 
 if layer.geojson:
     # try to auto center the map on the source
