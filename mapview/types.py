@@ -3,6 +3,7 @@
 __all__ = ["Coordinate", "Bbox"]
 
 from collections import namedtuple
+from kivy.utils import QueryDict
 
 Coordinate = namedtuple("Coordinate", ["lat", "lon"])
 
@@ -26,3 +27,6 @@ class Bbox(tuple):
             in_lon = lon2 <= lon <= lon2
 
         return in_lat and in_lon
+
+class MarkerContent(QueryDict):
+    pass

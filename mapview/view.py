@@ -25,6 +25,7 @@ from mapview import MIN_LONGITUDE, MAX_LONGITUDE, MIN_LATITUDE, MAX_LATITUDE, \
     CACHE_DIR, Coordinate, Bbox
 from mapview.source import MapSource
 from mapview.utils import clamp
+from mapview.types import MarkerContent
 from itertools import takewhile
 
 import webbrowser
@@ -144,7 +145,7 @@ class MapMarker(ButtonBehavior, Image):
     """A marker on a map, that must be used on a :class:`MapMarker`
     """
 
-    extra_content = StringProperty()
+    extra_content = ObjectProperty(None, baseclass=MarkerContent)
     """An extra content of marker.
     """
 
@@ -562,7 +563,7 @@ class MapView(Widget):
     current_marker = ObjectProperty(None, baseclass=MapMarker)
 
     def on_current_marker(self, instance, marker):
-        text = '{} {} {}'.format(marker.extra_content, marker.lat, marker.lon)
+        text = '{} {} {}'.format(marker.extra_content.name, marker.lat, marker.lon)
         if not hasattr(self, '_extra_content_layer'):
             w = MarkerExtraContent(text=text)
             w.width = self.width

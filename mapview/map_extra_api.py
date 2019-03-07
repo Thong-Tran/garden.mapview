@@ -1,6 +1,8 @@
 import requests
 import json
 from kivy.logger import Logger
+from .types import MarkerContent
+from re import match
 
 HERE_APP_ID='Xf6kJqi4LV3lJqyNy6cv'
 HERE_TOKEN='ku2ywCt2BHba1ycKJHggzA'
@@ -42,13 +44,13 @@ google_maps_search_nearby = (
     'keyword={searchtext}&key={token}'
 )
 
-def create_geojson(l):
+def create_geojson(l, properties={}):
     return {
         "type": "FeatureCollection",
         "features": [
             {
                 "type": "Feature",
-                "properties": {},
+                "properties": properties,
                 "geometry": {
                     "type": "LineString",
                     "coordinates": l
@@ -57,10 +59,10 @@ def create_geojson(l):
         ]
     }
 
-def create_point(l):
+def create_point(l, properties={}):
     return {
         "type": "Feature",
-        "properties": {},
+        "properties": properties,
         "geometry": {
             "type": "Point",
             "coordinates": l
@@ -186,7 +188,7 @@ def create_point_here_maps(searchtext, country='VNM', app_id=None, token=None):
 
         lonlat = geocode['Response']['View'][0]['Result'][0]['Location']['DisplayPosition']
         yield {
-                'extra_content': i['label'],
+                'extra_content': MarkerContent(name=i['label']),
                 'lon': lonlat['Longitude'],
                 'lat': lonlat['Latitude']
         }
@@ -209,8 +211,22 @@ def create_point_goodle_maps(searchtext, lon, lat, distance=5000, token=None):
         raise RuntimeError('No result found!')
 
     for i in js['results']:
+        content = {
+            'icon': i['icon'],
+            'name': i['name'],
+            'rating': i['rating'],
+            'types': i['types'],
+            'vicinity': i['vicinity']
+        }
+        if i.get('photos'):
+            content['glink'] = match(r'^<a href="(.*)">$',
+                        i['photos'][0]['html_attributions'][0]).groups()[0]
+        if i.get('plus_code'):
+            content['plus_code'] = i['plus_code']
+
         yield {
-                'extra_content': i['name'],
+                'extra_content': MarkerContent(**content),
                 'lon': i['geometry']['location']['lng'],
                 'lat': i['geometry']['location']['lat']
         }
+    print(content)

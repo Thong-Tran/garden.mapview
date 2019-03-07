@@ -234,7 +234,6 @@ class GeoJsonMapLayer(MapLayer):
                     max_zoom = self.parent.map_source.max_zoom
                     nw = max_zoom - pzoom
                     if len(STROKE_WIDTH) > nw:
-                        # print(pzoom, dp(STROKE_WIDTH[nw]))
                         i.width = dp(STROKE_WIDTH[nw])
             self.first_time = False
 
@@ -366,21 +365,17 @@ class GeoJsonMapLayer(MapLayer):
             xy = list(self._lonlat_to_xy(geometry["coordinates"]))
             xy = flatten(xy)
             graphics.append(Color(*stroke))
-            graphics.append(Line(points=xy, width=stroke_width,
-                                cap='round', joint='round'))
+            graphics.append(Line(points=xy, width=stroke_width))
 
         return graphics
 
     def _lonlat_to_xy(self, lonlats):
         view = self.parent
         zoom = view.zoom
-        # first = True
         for lon, lat in lonlats:
             p = view.get_window_xy_from(lat, lon, zoom)
             p = p[0] - self.parent.delta_x, p[1] - self.parent.delta_y
             p = self.parent._scatter.to_local(*p)
-            # print(p) if first else None
-            # first = False
             yield p
 
     def _get_color_from(self, value):
