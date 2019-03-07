@@ -4,6 +4,7 @@ __all__ = ["MapView", "MapMarker", "MapMarkerPopup", "MapLayer",
            "MarkerMapLayer"]
 
 from os.path import join, dirname
+from functools import partial
 from kivy.clock import Clock
 from kivy.metrics import dp
 from kivy.uix.widget import Widget
@@ -11,12 +12,14 @@ from kivy.uix.label import Label
 from kivy.uix.image import Image
 from kivy.uix.scatter import Scatter
 from kivy.uix.behaviors import ButtonBehavior
+from kivy.uix.scrollview import ScrollView
 from kivy.properties import NumericProperty, ObjectProperty, ListProperty, \
     AliasProperty, BooleanProperty, StringProperty
 from kivy.graphics import Canvas, Color, Rectangle
 from kivy.graphics.transformation import Matrix
 from kivy.lang import Builder
 from kivy.compat import string_types
+from kivy.animation import Animation
 from math import ceil
 from mapview import MIN_LONGITUDE, MAX_LONGITUDE, MIN_LATITUDE, MAX_LATITUDE, \
     CACHE_DIR, Coordinate, Bbox
@@ -81,6 +84,35 @@ Builder.load_string("""
         center_x: root.center_x
         size: root.popup_size
 
+<MarkerExtraContent>:
+    size_hint: None, None
+    size: dp(400), 0
+    pos: 0, 0
+    padding: [dp(5)]
+    canvas.before:
+        Color:
+            rgba: .8, .8, .8, 1
+        Rectangle:
+            pos: self.x, self.y
+            size: self.width, self.height
+    FloatLayout:
+        Label:
+            text: root.text
+            color: 0, 0, 0, 1
+            pos: self.parent.pos
+        AnchorLayout:
+            anchor_x: 'right'
+            anchor_y: 'top'
+            pos: self.parent.pos
+            Button:
+                size_hint: None, None
+                size: dp(20), dp(20)
+                background_down: ''
+                # background_normal: ''
+                text: "X"
+                font_size: '10sp'
+                on_release: root.hide_widget()
+
 """)
 
 
@@ -110,6 +142,10 @@ class Tile(Rectangle):
 
 class MapMarker(ButtonBehavior, Image):
     """A marker on a map, that must be used on a :class:`MapMarker`
+    """
+
+    extra_content = StringProperty()
+    """An extra content of marker.
     """
 
     anchor_x = NumericProperty(0.5)
@@ -142,6 +178,8 @@ class MapMarker(ButtonBehavior, Image):
             self._layer.remove_widget(self)
             self._layer = None
 
+    def on_release(self, *args):
+        self._layer.parent.on_touch_marker(self)
 
 class MapMarkerPopup(MapMarker):
     is_open = BooleanProperty(False)
@@ -252,6 +290,16 @@ class MarkerMapLayer(MapLayer):
         self.clear_widgets()
         del self.markers[:]
 
+
+class MarkerExtraContent(ScrollView):
+    text = StringProperty()
+    def show_widget(self, *args):
+        ani = Animation(size=(self.width, dp(50)), d=0.5)
+        ani.start(self)
+
+    def hide_widget(self, *args):
+        ani = Animation(size=(self.width ,0), d=0.5)
+        ani.start(self)
 
 class MapViewScatter(Scatter):
     # internal
@@ -634,6 +682,11 @@ class MapView(Widget):
             self.animated_diff_scale_at(d, *touch.pos)
             self._touch_zoom = (self.zoom, round(self._scale))
             return True
+        elif "button" in touch.profile and touch.button == 'right':
+            pos = self.get_latlon_at(*touch.pos)
+            marker = MapMarker(lat=pos.lat, lon=pos.lon)
+            self.add_marker(marker)
+            return True
         elif touch.is_double_tap and self.double_tap_zoom:
             self.animated_diff_scale_at(1, *touch.pos)
             return True
@@ -642,6 +695,15 @@ class MapView(Widget):
         if self._touch_count == 1:
             self._touch_zoom = (self.zoom, round(self._scale))
         return super(MapView, self).on_touch_down(touch)
+
+    def on_touch_move(self, touch):
+        if not self.collide_point(*touch.pos):
+            return
+
+        if "button" in touch.profile and touch.button == 'left'\
+            and abs(touch.dx) > dp(2) and abs(touch.dy) > dp(2):
+            touch.is_used = True
+        return super(MapView, self).on_touch_move(touch)
 
     def on_touch_up(self, touch):
         if touch.grab_current == self:
@@ -658,8 +720,39 @@ class MapView(Widget):
                 elif cur_zoom > zoom or cur_scale > scale:
                     self.animated_diff_scale_at(2. - cur_scale, *touch.pos)
                 self._pause = False
+
+            if "button" in touch.profile and touch.button == 'left'\
+                and not hasattr(touch, 'is_used')\
+                and (touch.time_end - touch.time_start) > 0.7:
+                pos = self.get_latlon_at(*touch.pos)
+                marker = MapMarker(lat=pos.lat, lon=pos.lon)
+                self.add_marker(marker)
+
             return True
         return super(MapView, self).on_touch_up(touch)
+
+    marker_outside_callback = None
+    ''' An embedded attribute to avoid overwriting
+    :meth:`MapSource.on_touch_marker`
+    Have args: marker, *args
+    '''
+
+    def on_touch_marker(self, marker, *args):
+        if self.marker_outside_callback\
+            and callable(self.marker_outside_callback):
+            self.marker_outside_callback(marker, *args)
+            return
+
+        text = '{} {} {}'.format(marker.extra_content, marker.lat, marker.lon)
+        if not hasattr(self, '_extra_content_layer'):
+            w = MarkerExtraContent(text=text)
+            w.width = self.width
+            self._extra_content_layer = w
+            self.add_widget(w)
+            w.show_widget()
+        else:
+            self._extra_content_layer.text = text
+            self._extra_content_layer.show_widget()
 
     def on_transform(self, *args):
         self._invalid_scale = True

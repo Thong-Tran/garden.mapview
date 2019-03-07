@@ -36,7 +36,7 @@ class MBTilesMapSource(MapSource):
         cx = cy = 0.
         cz = 5
         if "bounds" in metadata:
-            self.bounds = bounds = map(float, metadata["bounds"].split(","))
+            self.bounds = bounds = list(map(float, metadata["bounds"].split(",")))
         if "center" in metadata:
             cx, cy, cz = map(float, metadata["center"].split(","))
         elif self.bounds:
