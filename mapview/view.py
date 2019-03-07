@@ -179,7 +179,11 @@ class MapMarker(ButtonBehavior, Image):
             self._layer = None
 
     def on_release(self, *args):
-        self._layer.parent.on_touch_marker(self)
+        mapv = self._layer.parent
+        if mapv.current_marker is self:
+            mapv.on_current_marker(mapv, self)
+        else:
+            mapv.current_marker = self
 
 class MapMarkerPopup(MapMarker):
     is_open = BooleanProperty(False)
@@ -555,6 +559,20 @@ class MapView(Widget):
             self.set_zoom_at(other._zoom, *self.center)
         self.center_on(other.get_latlon_at(*self.center))
 
+    current_marker = ObjectProperty(None, baseclass=MapMarker)
+
+    def on_current_marker(self, instance, marker):
+        text = '{} {} {}'.format(marker.extra_content, marker.lat, marker.lon)
+        if not hasattr(self, '_extra_content_layer'):
+            w = MarkerExtraContent(text=text)
+            w.width = self.width
+            self._extra_content_layer = w
+            self.add_widget(w)
+            w.show_widget()
+        else:
+            self._extra_content_layer.text = text
+            self._extra_content_layer.show_widget()
+
     # Private API
 
     def __init__(self, **kwargs):
@@ -730,29 +748,6 @@ class MapView(Widget):
 
             return True
         return super(MapView, self).on_touch_up(touch)
-
-    marker_outside_callback = None
-    ''' An embedded attribute to avoid overwriting
-    :meth:`MapSource.on_touch_marker`
-    Have args: marker, *args
-    '''
-
-    def on_touch_marker(self, marker, *args):
-        if self.marker_outside_callback\
-            and callable(self.marker_outside_callback):
-            self.marker_outside_callback(marker, *args)
-            return
-
-        text = '{} {} {}'.format(marker.extra_content, marker.lat, marker.lon)
-        if not hasattr(self, '_extra_content_layer'):
-            w = MarkerExtraContent(text=text)
-            w.width = self.width
-            self._extra_content_layer = w
-            self.add_widget(w)
-            w.show_widget()
-        else:
-            self._extra_content_layer.text = text
-            self._extra_content_layer.show_widget()
 
     def on_transform(self, *args):
         self._invalid_scale = True
