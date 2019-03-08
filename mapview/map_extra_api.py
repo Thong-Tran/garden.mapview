@@ -224,7 +224,7 @@ def create_point_goodle_maps(searchtext, lon, lat, distance=5000, token=None):
             if result:
                 content['glink'] = result.groups()[0]
             else:
-                print('Regex fail'+i['photos'][0]['html_attributions'][0])
+                Logger.warning('Regex fail: '+i['photos'][0]['html_attributions'][0])
         if i.get('plus_code'):
             content['plus_code'] = i['plus_code']
 
@@ -233,4 +233,3 @@ def create_point_goodle_maps(searchtext, lon, lat, distance=5000, token=None):
                 'lon': i['geometry']['location']['lng'],
                 'lat': i['geometry']['location']['lat']
         }
-    print(content)

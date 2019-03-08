@@ -229,12 +229,12 @@ class GeoJsonMapLayer(MapLayer):
         if self.geojson:
             update = not self.first_time
             self.on_geojson(self, self.geojson, update=update)
-            for i in self.canvas_line.children:
-                if isinstance(i, Line):
-                    max_zoom = self.parent.map_source.max_zoom
-                    nw = max_zoom - pzoom
-                    if len(STROKE_WIDTH) > nw:
-                        i.width = dp(STROKE_WIDTH[nw])
+            # for i in self.canvas_line.children:
+            #     if isinstance(i, Line):
+            #         max_zoom = self.parent.map_source.max_zoom
+            #         nw = max_zoom - pzoom
+            #         if len(STROKE_WIDTH) > nw:
+            #             i.width = dp(STROKE_WIDTH[nw])
             self.first_time = False
 
     def traverse_feature(self, func, part=None):
@@ -362,8 +362,11 @@ class GeoJsonMapLayer(MapLayer):
         elif tp == "LineString":
             stroke = get_color_from_hex(properties.get("stroke", "#000000aa"))
             stroke_width = dp(properties.get("stroke-width", 2))
-            xy = list(self._lonlat_to_xy(geometry["coordinates"]))
-            xy = flatten(xy)
+            if geometry.get('points'):
+                xy = geometry.get('points')
+            else:
+                xy = list(self._lonlat_to_xy(geometry["coordinates"]))
+                xy = flatten(xy)
             graphics.append(Color(*stroke))
             graphics.append(Line(points=xy, width=stroke_width))
 
