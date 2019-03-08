@@ -734,7 +734,7 @@ class MapView(Widget):
                     self.animated_diff_scale_at(2. - cur_scale, *touch.pos)
                 self._pause = False
 
-            if round(abs(touch.lon - self.lon) < 0 and abs(touch.lat - self.lat)) < 0\
+            if abs(touch.lon - self.lon) < .0001 and abs(touch.lat - self.lat) < .0001\
                 and (touch.time_end - touch.time_start) > 0.7:
                 pos = self.get_latlon_at(*touch.pos)
                 marker = MapMarker(lat=pos.lat, lon=pos.lon)
