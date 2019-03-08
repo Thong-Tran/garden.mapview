@@ -22,10 +22,10 @@ from kivy.compat import string_types
 from kivy.animation import Animation
 from math import ceil
 from mapview import MIN_LONGITUDE, MAX_LONGITUDE, MIN_LATITUDE, MAX_LATITUDE, \
-    CACHE_DIR, Coordinate, Bbox
+    CACHE_DIR
 from mapview.source import MapSource
 from mapview.utils import clamp
-from mapview.types import MarkerContent
+from mapview.types import MarkerContent, Coordinate, Bbox
 from itertools import takewhile
 
 import webbrowser
@@ -711,19 +711,12 @@ class MapView(Widget):
             self.animated_diff_scale_at(1, *touch.pos)
             return True
         touch.grab(self)
+        touch.lon = self.lon
+        touch.lat = self.lat
         self._touch_count += 1
         if self._touch_count == 1:
             self._touch_zoom = (self.zoom, round(self._scale))
         return super(MapView, self).on_touch_down(touch)
-
-    def on_touch_move(self, touch):
-        if not self.collide_point(*touch.pos):
-            return
-
-        if "button" in touch.profile and touch.button == 'left'\
-            and abs(touch.dx) > dp(2) and abs(touch.dy) > dp(2):
-            touch.is_used = True
-        return super(MapView, self).on_touch_move(touch)
 
     def on_touch_up(self, touch):
         if touch.grab_current == self:
@@ -741,8 +734,7 @@ class MapView(Widget):
                     self.animated_diff_scale_at(2. - cur_scale, *touch.pos)
                 self._pause = False
 
-            if "button" in touch.profile and touch.button == 'left'\
-                and not hasattr(touch, 'is_used')\
+            if round(abs(touch.lon - self.lon) < 0 and abs(touch.lat - self.lat)) < 0\
                 and (touch.time_end - touch.time_start) > 0.7:
                 pos = self.get_latlon_at(*touch.pos)
                 marker = MapMarker(lat=pos.lat, lon=pos.lon)
