@@ -180,7 +180,7 @@ def create_point_here_maps(searchtext, country='VNM', app_id=None, token=None):
     for i in js['suggestions']:
         locationid = i['locationId']
         r = requests.get(
-                    here_maps_geocoder.format(locationid=locationid,**params))
+                    here_maps_geocoder.format(locationid=locationid ,**params))
         if r.status_code != 200:
             Logger.warning('Here maps search: \n'+r.text)
             continue
@@ -219,8 +219,12 @@ def create_point_goodle_maps(searchtext, lon, lat, distance=5000, token=None):
             'vicinity': i['vicinity']
         }
         if i.get('photos'):
-            content['glink'] = match(r'^<a href="(.*)">$',
-                        i['photos'][0]['html_attributions'][0]).groups()[0]
+            result = match('^<a href="(.*)">',
+                        i['photos'][0]['html_attributions'][0])
+            if result:
+                content['glink'] = result.groups()[0]
+            else:
+                print('Regex fail'+i['photos'][0]['html_attributions'][0])
         if i.get('plus_code'):
             content['plus_code'] = i['plus_code']
 
