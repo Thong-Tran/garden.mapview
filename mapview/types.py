@@ -29,4 +29,5 @@ class Bbox(tuple):
         return in_lat and in_lon
 
 class MarkerContent(QueryDict):
-    pass
+    def __init__ (self, *args, name='', **kwargs):
+        super(MarkerContent, self).__init__(*args, name=name, **kwargs)

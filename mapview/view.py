@@ -145,7 +145,7 @@ class MapMarker(ButtonBehavior, Image):
     """A marker on a map, that must be used on a :class:`MapMarker`
     """
 
-    extra_content = ObjectProperty(None, baseclass=MarkerContent)
+    extra_content = ObjectProperty(MarkerContent(), baseclass=MarkerContent)
     """An extra content of marker.
     """
 
@@ -705,6 +705,7 @@ class MapView(Widget):
             pos = self.get_latlon_at(*touch.pos)
             marker = MapMarker(lat=pos.lat, lon=pos.lon)
             self.add_marker(marker)
+            self.current_marker = marker
             return True
         elif touch.is_double_tap and self.double_tap_zoom:
             self.animated_diff_scale_at(1, *touch.pos)
@@ -746,6 +747,7 @@ class MapView(Widget):
                 pos = self.get_latlon_at(*touch.pos)
                 marker = MapMarker(lat=pos.lat, lon=pos.lon)
                 self.add_marker(marker)
+                self.current_marker = marker
 
             return True
         return super(MapView, self).on_touch_up(touch)
