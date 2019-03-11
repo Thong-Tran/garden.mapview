@@ -1,5 +1,5 @@
 import unittest
-from mapview import MapView
+from mapview.view import MapView
 
 
 class TextInputTest(unittest.TestCase):
